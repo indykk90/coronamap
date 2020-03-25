@@ -1,39 +1,82 @@
 <html>
 <head>
-   <title>Simple HERE Map</title>
-   <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
-   <link rel="stylesheet" href="css/styles.css?v=1.0">
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-   crossorigin=""/>
+   <title>HERE & Leaflet</title>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+   <link rel="stylesheet" type="text/css" href="style_map.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+   <script src="/js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
+   <script src="worldmap.js"></script>
+   <script src="woj.js"></script>
+   <script src="woj_pom.js"></script>
    <style>
-      html, body { border: 0; margin: 0; padding: 0; }
-      #map { height: 100vh; width: 100vw; }
+      body, html { border: 0; padding: 0; margin: 0; }
+      #map { width: 100vw; height: 100vh; }
    </style>
 </head>
 <body>
+   <div class="statistic" style="text-align: center; color:red;"><h4>Coronavirus cases in Poland: <b>125</b></div>
    <div id="map"></div>
-   <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-   <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-   <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
-   <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
-   integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-   crossorigin=""></script>
    <script>
-      const platform = new H.service.Platform({ apikey: 'YzIYwQpS4P_M_ufPCTR2QGt7jkBQd1NmAYUnB7eGrDQ' });
-      const defaultLayers = platform.createDefaultLayers();
-      const map = new H.Map(document.getElementById('map'),
-         defaultLayers.vector.normal.map, {
-         center: { lat: 50.049683, lng: 19.944544 },
-         zoom: 13,
-         pixelRatio: window.devicePixelRatio || 1
-      });
-      window.addEventListener('resize', () => map.getViewPort().resize());
-      const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-      const ui = H.ui.UI.createDefault(map, defaultLayers);
+   const here = {
+     apiKey:'YzIYwQpS4P_M_ufPCTR2QGt7jkBQd1NmAYUnB7eGrDQ'
+   }
+   const style = 'reduced.night';
 
-      var marker = L.marker([50.06, 19.93]).addTo(map);
+   const hereTileUrl = `https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/${style}/{z}/{x}/{y}/512/png8?apiKey=${here.apiKey}&ppi=320`;
+
+   const map = L.map('map', {
+      center: [52.23, 21.00],
+      zoom: 11,
+      layers: [L.tileLayer(hereTileUrl)]
+   });
+   map.attributionControl.addAttribution('&copy; HERE 2019');
+
+   var marker = L.marker([50.06, 19.93]).addTo(map).on('mouseover', onClick);
+
+   function onClick(e) {
+    alert(this.getLatLng());
+}
+
+L.geoJson(miastaPol, {
+         onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>City: '+feature.properties.Miasto+'</h1><p>Infected: '+feature.properties.Zakażeni+'</h1><p>Deaths: '+feature.properties.Zgony+'<p>');
+        }
+        
+
+}).addTo(map);
+
+L.geoJson(wojMap, {
+        style: function (feature) {
+            var mag = feature.properties.Range;
+                    if (mag == 1) {
+                      return { color: "#F08080" }; 
+                    } 
+                    else if (mag == 2) {
+                      return { color: "#99d099" };
+                    } 
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>Voivodeship: '+feature.properties.Woj+'</h1><p>Infected: '+feature.properties.Zarażeni+'</h1><p>Source: <a href=' + feature.properties.Zrodlo + '>Check out the source!</a></p>');
+        }
+
+}).addTo(map);
+
+L.geoJson(wojPom, {
+        style: function (feature) {
+            var mag = feature.properties.Range;
+                    if (mag == 1) {
+                      return { color: "#F08080" }; 
+                    } 
+                    else if (mag == 2) {
+                      return { color: "#99d099" };
+                    } 
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>Voivodeship: '+feature.properties.Woj+'</h1><p>Infected: '+feature.properties.Zarażeni+'</h1><p>Source: <a href=' + feature.properties.Zrodlo + '>Check out the source!</a></p>');
+        }
+
+}).addTo(map);
    </script>
 </body>
 </html>
