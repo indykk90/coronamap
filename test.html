@@ -1,0 +1,82 @@
+<html>
+<head>
+   <title>HERE & Leaflet</title>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+   <link rel="stylesheet" type="text/css" href="style_map.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+   <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+   <script src="/js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
+   <script src="worldmap.js"></script>
+   <script src="woj.js"></script>
+   <script src="woj_pom.js"></script>
+   <style>
+      body, html { border: 0; padding: 0; margin: 0; }
+      #map { width: 100vw; height: 100vh; }
+   </style>
+</head>
+<body>
+   <div class="statistic" style="text-align: center; color:red;"><h4>Coronavirus cases in Poland: <b>125</b></div>
+   <div id="map"></div>
+   <script>
+   const here = {
+     apiKey:'YzIYwQpS4P_M_ufPCTR2QGt7jkBQd1NmAYUnB7eGrDQ'
+   }
+   const style = 'reduced.night';
+
+   const hereTileUrl = `https://2.base.maps.ls.hereapi.com/maptile/2.1/maptile/newest/${style}/{z}/{x}/{y}/512/png8?apiKey=${here.apiKey}&ppi=320`;
+
+   const map = L.map('map', {
+      center: [52.23, 21.00],
+      zoom: 11,
+      layers: [L.tileLayer(hereTileUrl)]
+   });
+   map.attributionControl.addAttribution('&copy; HERE 2019');
+
+   var marker = L.marker([50.06, 19.93]).addTo(map).on('mouseover', onClick);
+
+   function onClick(e) {
+    alert(this.getLatLng());
+}
+
+L.geoJson(miastaPol, {
+         onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>City: '+feature.properties.Miasto+'</h1><p>Infected: '+feature.properties.Zakażeni+'</h1><p>Deaths: '+feature.properties.Zgony+'<p>');
+        }
+        
+
+}).addTo(map);
+
+L.geoJson(wojMap, {
+        style: function (feature) {
+            var mag = feature.properties.Range;
+                    if (mag == 1) {
+                      return { color: "#F08080" }; 
+                    } 
+                    else if (mag == 2) {
+                      return { color: "#99d099" };
+                    } 
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>Voivodeship: '+feature.properties.Woj+'</h1><p>Infected: '+feature.properties.Zarażeni+'</h1><p>Source: <a href=' + feature.properties.Zrodlo + '>Check out the source!</a></p>');
+        }
+
+}).addTo(map);
+
+L.geoJson(wojPom, {
+        style: function (feature) {
+            var mag = feature.properties.Range;
+                    if (mag == 1) {
+                      return { color: "#F08080" }; 
+                    } 
+                    else if (mag == 2) {
+                      return { color: "#99d099" };
+                    } 
+        },
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup('<h1><p>Voivodeship: '+feature.properties.Woj+'</h1><p>Infected: '+feature.properties.Zarażeni+'</h1><p>Source: <a href=' + feature.properties.Zrodlo + '>Check out the source!</a></p>');
+        }
+
+}).addTo(map);
+   </script>
+</body>
+</html>
